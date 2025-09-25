@@ -112,10 +112,7 @@ infixl 7 .|. --preciso definir o infix?
 -- x `absDiff` y = |x - y|
 -- (Careful here: this - is the actual minus operator we know from the integers!)
 absDiff :: Nat -> Nat -> Nat
-absDiff n m  = 
-  case m <= n of
-    O -> m - n  -- |n - m| = n - m se m <= n
-    S O -> n - m -- |n - m| = m - n, se n <= m
+absDiff n m  = (n -* m) + (m -* n)
 
 (|-|) :: Nat -> Nat -> Nat
 (|-|) = absDiff   
