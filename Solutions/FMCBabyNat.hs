@@ -1,7 +1,7 @@
 module FMCBabyNat where
 
 -- Do not alter this import!
-import Prelude ( Show(..) , Eq(..) , undefined )
+import Prelude ( Show(..) , Eq(..) , undefined, error )
 
 -- Define evenerything that is undefined,
 -- without using standard Haskell functions.
@@ -22,6 +22,8 @@ five  = S four
 six   = S five
 seven = S six
 eight = S seven
+tt = S O
+ff = O
 
 -- addition
 (+) :: Nat -> Nat -> Nat
@@ -34,57 +36,60 @@ infixl 6 +
 
 -- Output: O means False, S O means True
 isZero :: Nat -> Nat
-isZero O = S O
-isZero (S n) = O --FECHEI
+isZero O     = tt
+isZero (S n) = ff -- (S n) indica que a forma do Nat é sucessor
+
 -- pred is the predecessor but we define zero's to be zero
 pred :: Nat -> Nat
-pred O = O
-pred (S n) = n --FECHEI
+pred O     = O
+pred (S n) = n -- (S n) é usado para depois o n ser retomado como antecessor
 
 -- Output: O means False, S O means True
 even :: Nat -> Nat
-even O = S O
-even (S n) = odd n --FECHEI
+even O     = tt
+even (S n) = odd n -- por recursão, uma função chama a outra até que chegue a even/odd de zero
 
 odd :: Nat -> Nat
-odd O = O
-odd (S n) = even n --FECHEI
+odd O     = ff
+odd (S n) = even n
 
 -- This is called the dotminus or monus operator
 -- (also: proper subtraction, arithmetic subtraction, ...).
 -- It behaves like subtraction, except that it returns 0
 -- when "normal" subtraction would return a negative number.
 monus :: Nat -> Nat -> Nat
-O `monus` n = O       -- outra forma de escrever a operação é us
+O `monus` _ = O       -- outra forma de escrever a operação é usar backtips `operação`
 n `monus` O = n
 (S m) `monus` (S n) = m `monus` n -- e o caso em que n > m? Chegaria ao caso  0 - n por recursão
---FECHEI
+
 (-*) :: Nat -> Nat -> Nat
 (-*) = monus
-infix 6 -* -- verificar se é necessário
+infix 6 -* 
 
 -- multiplication
 (*) :: Nat -> Nat -> Nat
-n * O = O
+n * O     = O
 n * (S m) = n * m + n
---FECHEI
+
 infixl 7 *
 
 -- exponentiation
 (^) :: Nat -> Nat -> Nat
-n ^ O = S O
+n ^ O     = S O
 n ^ (S m) = n ^ m * n
 
 infixr 8 ^
 
 (<=) :: Nat -> Nat -> Nat
-O <= _ = S O
-S _ <= O = O
-(S n) <= (S m) = n <= m
+O <= _     = tt
+S _ <= O   = ff
+S n <= S m = n <= m
+
+infix <= -- preciso de precedência sintática?
 
 -- quotient
 (/) :: Nat -> Nat -> Nat
-n / O = undefined
+n / O = error "A divisão por zero é indefinida"
 n / m = 
   case m <= n of 
     O -> O
@@ -94,8 +99,9 @@ infixl 7 /
 
 -- remainder
 (%) :: Nat -> Nat -> Nat
-n % O = undefined
+n % O = error "A divisão por zero é indefinida"
 n % m = n -* (m * (n / m))
+
 infixl 7 %
 
 -- divides
@@ -104,26 +110,42 @@ infixl 7 %
 -- again, outputs: O means False, S O means True
 (|||) :: Nat -> Nat -> Nat
 n ||| m =  isZero (m % n) -- b%a == O
+
 infixl 7 |||  --precedência sintática!! verificar
 
 (.|.) :: Nat -> Nat -> Nat
 n .|. m = n ||| m
+
 infixl 7 .|. --preciso definir o infix?
+
 -- x `absDiff` y = |x - y|
 -- (Careful here: this - is the actual minus operator we know from the integers!)
 absDiff :: Nat -> Nat -> Nat
-absDiff n m  = (n -* m) + (m -* n)
+absDiff n m  = (n -* m) + (m -* n)  -- corrigir
+
 
 (|-|) :: Nat -> Nat -> Nat
-(|-|) = absDiff   
+(|-|) = absDiff 
+  
+infix 6 |-|
 
 factorial :: Nat -> Nat
-factorial = undefined
+factorial O     = S O
+factorial (S n) = S n * factorial n
 
 -- signum of a number (-1, 0, or 1)
 sg :: Nat -> Nat
-sg = undefined
+sg O     = O
+sg (S n) = S O
 
--- lo b a is the floor of the logarithm base b of a
-lo :: Nat -> Nat -> Nat
-lo = undefined
+-- lo b a is the floor of the logarithm base b of a 
+lo :: Nat -> Nat -> Nat -- primeiro argumento é "a" e segundo é "b"
+lo O _ = error "lo não definido para logaritmando igual a zero" -- log de n na base zero
+lo _ O = error "lo não definido para base zero" -- log de zero na base n
+lo (S O) n = error "lo não definido para base S O" -- log de n na base um, pois daria vários logs
+lo n m = 
+  case m <= n of
+    O -> n / m 
+    S O -> n / m -* S O
+  --n / m - S O
+-- toda vez que eu dividir pela base, quero somar 1
