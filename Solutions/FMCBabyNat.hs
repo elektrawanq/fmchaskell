@@ -22,6 +22,10 @@ five  = S four
 six   = S five
 seven = S six
 eight = S seven
+nine = S eight
+ten = S nine
+
+-- Booleanos
 tt = S O
 ff = O
 
@@ -42,15 +46,16 @@ isZero (S n) = ff -- (S n) indica que a forma do Nat é sucessor
 -- pred is the predecessor but we define zero's to be zero
 pred :: Nat -> Nat
 pred O     = O
-pred (S n) = n -- (S n) é usado para depois o n ser retomado como antecessor
+pred (S n) = n   -- (S n) é usado para depois o n ser retomado como antecessor
 
 -- Output: O means False, S O means True
 even :: Nat -> Nat
 even O     = tt
 even (S n) = odd n -- por recursão, uma função chama a outra até que chegue a even/odd de zero
+                   -- uma espécie de ping pong
 
 odd :: Nat -> Nat
-odd O     = ff
+odd O     = ff 
 odd (S n) = even n
 
 -- This is called the dotminus or monus operator
@@ -58,12 +63,13 @@ odd (S n) = even n
 -- It behaves like subtraction, except that it returns 0
 -- when "normal" subtraction would return a negative number.
 monus :: Nat -> Nat -> Nat
-O `monus` _ = O       -- outra forma de escrever a operação é usar backtips `operação`
+O `monus` _ = O       -- outra forma de escrever a operação é usar backtips: `operação`
 n `monus` O = n
 (S m) `monus` (S n) = m `monus` n -- e o caso em que n > m? Chegaria ao caso  0 - n por recursão
 
 (-*) :: Nat -> Nat -> Nat
 (-*) = monus
+
 infix 6 -* 
 
 -- multiplication
@@ -85,7 +91,7 @@ O <= _     = tt
 S _ <= O   = ff
 S n <= S m = n <= m
 
-infix <= -- preciso de precedência sintática?
+infix <= 
 
 -- quotient
 (/) :: Nat -> Nat -> Nat
@@ -100,7 +106,7 @@ infixl 7 /
 -- remainder
 (%) :: Nat -> Nat -> Nat
 n % O = error "A divisão por zero é indefinida"
-n % m = n -* (m * (n / m))
+n % m = n -* (m * (n / m))  -- resto = Dividendo - (divisor * quociente)
 
 infixl 7 %
 
@@ -109,19 +115,19 @@ infixl 7 %
 -- and then define `devides` as a synonym to it
 -- again, outputs: O means False, S O means True
 (|||) :: Nat -> Nat -> Nat
-n ||| m =  isZero (m % n) -- b%a == O
+n ||| m =  isZero (m % n) -- m % n == O
 
-infixl 7 |||  --precedência sintática!! verificar
+infix |||
 
 (.|.) :: Nat -> Nat -> Nat
 n .|. m = n ||| m
 
-infixl 7 .|. --preciso definir o infix?
+infix .|.
 
 -- x `absDiff` y = |x - y|
 -- (Careful here: this - is the actual minus operator we know from the integers!)
 absDiff :: Nat -> Nat -> Nat
-absDiff n m  = (n -* m) + (m -* n)  -- corrigir
+absDiff n m  = (n -* m) + (m -* n)  
 
 
 (|-|) :: Nat -> Nat -> Nat
@@ -138,14 +144,15 @@ sg :: Nat -> Nat
 sg O     = O
 sg (S n) = S O
 
--- lo b a is the floor of the logarithm base b of a 
-lo :: Nat -> Nat -> Nat -- primeiro argumento é "a" e segundo é "b"
-lo O _ = error "lo não definido para logaritmando igual a zero" -- log de n na base zero
-lo _ O = error "lo não definido para base zero" -- log de zero na base n
-lo (S O) n = error "lo não definido para base S O" -- log de n na base um, pois daria vários logs
-lo n m = 
+-- lo b a is the floor of the logarithm base b of a
+lo :: Nat -> Nat -> Nat -- o primeiro argumento é a base e o segundo é o logaritmando
+lo O _     = error "lo não definido para base zero" -- log de n na base zero
+lo _ O     = error "lo não definido para logaritmando igual a zero" -- log de zero na base n
+lo (S O) n = error "lo não definido para base one" -- log de n na base um, pois daria vários logs
+lo n m     =
   case m <= n of
-    O -> n / m 
-    S O -> n / m -* S O
-  --n / m - S O
--- toda vez que eu dividir pela base, quero somar 1
+    O -> (m / n)/n + S O
+    S O -> O
+-- Toda vez que eu dividir pela base, quero somar 1;
+-- isto pois: quando eu conto os Sn , eu estou contando o quociente e não o expoente.
+-- Contudo, o quociente dividido pela base resulta no lo a b menos 1.
