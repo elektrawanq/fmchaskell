@@ -136,7 +136,7 @@ monus = (-*)
 (-*) :: Nat -> Nat -> Nat
 n -* O       = n
 O -* n       = O
-(S n) -* S m = n -* m
+(S n) -* (S m) = n -* m
 
 infix 6 -*
 
@@ -206,7 +206,7 @@ dist (S n) (S m) = dist n m
 
 (|-|) = dist
 
-infix |-|
+infix 6 |-|
 
 factorial :: Nat -> Nat
 factorial O     = S O
