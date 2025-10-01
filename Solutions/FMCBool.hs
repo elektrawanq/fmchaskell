@@ -32,8 +32,8 @@ instance Show Bool where
 instance Enum Bool where
 
 --corrigir toEnum
-    toEnum 1 = True
     toEnum 0 = False
+    toEnum 1 = True
     toEnum _ = error "O argumento não é um valor booleano"
 
     fromEnum True  = 1
@@ -54,25 +54,28 @@ _ || _         = True
 
 infixr 2 ||
 
--- NAND (Sheffer stroke)
+-- NAND (Sheffer stroke) -- negação da AND
 (/|\) :: Bool -> Bool -> Bool
-True /|\ True   = False
-_ /|\ _         = True
+x /|\ y = not (x && y)
+--True /|\ True   = False
+--_ /|\ _         = True
 
 infixr 2 /|\
 
 -- NOR (aka: Peirce arrow or Quine dagger)
-(\|/) :: Bool -> Bool -> Bool
-False \|/ False = True
-_ \|/ _         = False
+(\|/) :: Bool -> Bool -> Bool  -- negação do OR
+x \|/ y = not (x || y)
+--False \|/ False = True
+--_ \|/ _         = False
 
 infixr 2 \|/
 
--- XOR (exclusive disjunction)
+-- XOR (exclusive disjunction) -- negação da bi-implicação
 (<=/=>) :: Bool -> Bool -> Bool
-True <=/=> True   = False
-False <=/=> False = False
-_ <=/=> _         = True
+x <=/=> y = not (x <=> y)
+--True <=/=> True   = False
+--False <=/=> False = False
+--_ <=/=> _         = True
 
 infixr 2 <=/=>
 
@@ -93,10 +96,11 @@ _ ==> _        = True
 
 infixr 1 ==>
 
--- logical "implied by"
-(<==) :: Bool -> Bool -> Bool
-False <== True = False
-_ <== _        = True
+-- logical "implied by" -- mesma definição da implicação, só muda a direção da seta
+(<==) :: Bool -> Bool -> Bool  -- é chamada equivalência lógica
+x <== y = y ==> x
+--False <== True = False
+--_ <== _        = True
 
 infixl 1 <==
 
