@@ -169,7 +169,7 @@ infixr 8 <^>
 (</>) :: Nat -> Nat -> Nat
 n </> O = error "A divisão por zero é indefinida"
 n </> m = 
-    case isZero (n -* m) of
+    case n <= m of
         True -> O
         False -> S((n -* m) </> m) 
 
