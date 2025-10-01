@@ -165,7 +165,7 @@ n <^> S m = n <^> m * n
 
 infixr 8 <^>
 
--- quotient
+-- quotient --CORRIGIR ESSA AQUI
 (</>) :: Nat -> Nat -> Nat
 n </> O = error "A divisão por zero é indefinida"
 n </> m = 
