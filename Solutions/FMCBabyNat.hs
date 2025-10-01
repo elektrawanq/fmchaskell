@@ -148,7 +148,7 @@ sg (S n) = S O
 lo :: Nat -> Nat -> Nat -- o primeiro argumento é a base e o segundo é o logaritmando
 lo O _     = error "lo não definido para base zero" -- log de n na base zero
 lo _ O     = error "lo não definido para logaritmando igual a zero" -- log de zero na base n
-lo (S O) n = error "lo não definido para base one" -- log de n na base um, pois daria vários logs
+lo (S O) _ = error "lo não definido para base one" -- log de n na base um, pois daria vários logs
 lo n m     =
   case m <= n of
     O -> (m / n)/n + S O
