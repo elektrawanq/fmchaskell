@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use if" #-}
 
-module ExNat where
+module FMCNat where
 
 -- Do not alter this import!
 import Prelude

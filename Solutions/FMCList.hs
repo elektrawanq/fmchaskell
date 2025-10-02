@@ -1,4 +1,6 @@
 {-# LANGUAGE GADTs #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use foldr" #-}
 
 module FMCList where
 
@@ -13,6 +15,8 @@ import Prelude
 import qualified Prelude   as P
 import qualified Data.List as L
 import qualified Data.Char as C
+import FMCNat
+-- import ExNat (Nat(O))  -- importou automaticamente (???)
 
 {- import qualified ... as ... ?
 
@@ -58,28 +62,39 @@ write [u,v]     for our u `Cons` (v `Cons` Nil)
 -}
 
 head :: [a] -> a
-head = undefined
+head []       = undefined -- não possui elementos, logo não tem elemento head
+head (x : xs) = x
 
 tail :: [a] -> [a]
-tail = undefined
+tail []       = undefined  --lista vazia, não há elemento para remover
+tail (x : xs) = xs
 
-null :: [a] -> Bool
-null = undefined
+null :: [a] -> Bool  -- fechei
+null []       = True
+null (x : xs) = False
 
 length :: Integral i => [a] -> i
-length = undefined
+length []       = O
+lenght (x : xs) = S (lenght xs)
 
 sum :: Num a => [a] -> a
-sum = undefined
+sum [] = O
+sum head (x : xs) = x + sum xs
 
 product :: Num a => [a] -> a
-product = undefined
+product [] = S O --tenho que definir como 1, pois ele vai multiplicar ao fim da desconstrução de uma lista não vazia
+product (x : xs) = x * product xs -- o head é mesmo necessário? Fica dando erro
 
 reverse :: [a] -> [a]
-reverse = undefined
+reverse [] = []
+reverse (x : xs) = Cons reverse xs x
 
 (++) :: [a] -> [a] -> [a]
-(++) = undefined
+--[a] ++ [] = [a] não preciso desse caso
+[] ++ ys = ys
+(x : xs) ++ ys = x : (xs ++ ys)  -- não preciso do head?
+-- no último caso,  a ideia é que já existe uma lista concatenada como eu queria
+-- e eu vou só adicionar o último elemento na frente. Depois eu vou executar a operação recursivamente
 
 -- right-associative for performance!
 -- (what?!)
@@ -87,7 +102,8 @@ infixr 5 ++
 
 -- (snoc is cons written backwards)
 snoc :: a -> [a] -> [a]
-snoc = undefined
+snoc x [] = [x]
+snoc x xs = xs ++ snoc x []
 
 (<:) :: [a] -> a -> [a]
 (<:) = flip snoc
