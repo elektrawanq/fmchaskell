@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use if" #-}
 
-module FMCNat where
+module Solutions.FMCNat where
 
 -- Do not alter this import!
 import Prelude
