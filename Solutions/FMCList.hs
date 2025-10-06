@@ -17,6 +17,7 @@ import qualified Prelude   as P
 import qualified Data.List as L
 import qualified Data.Char as C
 import Solutions.FMCNat -- lembrar de rodar o ghci na pasta fmchaskell
+import qualified Data.Type.Bool as TP
 
 {- import qualified ... as ... ?
 
@@ -75,7 +76,7 @@ null _  = False
 
 length :: [a] -> Nat -- modifiquei o tipo
 length []       = O
-lenght (x : xs) = S (lenght xs)
+length (x : xs) = S (length xs)
 
 sum :: Num a => [a] -> a
 sum []       = 0
@@ -85,9 +86,9 @@ product :: Num a => [a] -> a
 product [] = 1 --tenho que definir como 1, pois ele vai multiplicar ao fim da desconstrução de uma lista não vazia
 product (x : xs) = x * product xs -- o head é mesmo necessário? Fica dando erro
 
-reverse :: [a] -> [a] -- FAZER
+reverse :: [a] -> [a]
 reverse []       = []
-reverse (x : xs) = undefined --Cons reverse xs x
+reverse (x : xs) = snoc x (reverse xs)
 
 (++) :: [a] -> [a] -> [a]
 --[a] ++ [] = [a] não preciso desse caso
@@ -146,9 +147,6 @@ drop O [a]          = [a]
 drop (S n) []       = []   -- outra forma que tbm faz sentido
 drop (S n) (x : xs) = drop n xs
 
--- curry f a b = f (a,b)
--- f::
-
 takeWhile :: (a -> Bool) -> [a] -> [a] -- (condição -> bool) -> verifica a condição na lista 
 --e para quando a cond = False. Retorna a lista até antes de ser False.
 takeWhile _ [] = []
@@ -173,8 +171,9 @@ init (x : xs) = x : init xs
 
 inits :: [a] -> [[a]] --TERMINAR
 inits []  = [[]]
-inits [x] = [[], [x]]
---inits (x : xs) = inits (init (x : xs)) : (x : xs) -- rascunho anotações
+--inits [x] = [[], [x]] -- só pra guiar o que inits faz
+inits (x:xs) = [] : map (x:) (inits xs)
+--inits (x : xs) = inits (init (x : xs)) : (x : xs) -- rascunho e anotações: tentar outra definição
 
 subsequences :: [a] -> [[a]] -- 
 subsequences [] = [[]]
@@ -198,23 +197,29 @@ all c (x : xs)
 
 and :: [Bool] -> Bool -- verifica se todos os itens da lista são True
 and []       = True
-and (x : xs) = x && and xs 
+and (x : xs) = x (&&) and xs 
 
-or :: [Bool] -> Bool
+or :: [Bool] -> Bool -- verifica se ao menos um item da lista é True
 or []       = False
-or (x : xs) = x || or xs
+or (x : xs) = x (||) or xs
 
 
-concat :: [[a]] -> [a] -- arrumar isso
-concat [[]]   = []
---concat [[]] = []
-concat (x : xs) = x ++ concat xs
+concat :: [[a]] -> [a] 
+concat []        = []
+concat (xs : ys) = xs ++ concat ys -- ys é uma lista de listas xs, eu quero ir concatenando de par em par de listas xs
 
 
 -- elem using the funciton 'any' above
+elem :: Eq a => a -> [a] -> Bool
+elem x = any (== x) -- em que == é a função ou condição e x é a lista 
 
 -- elem': same as elem but elementary definition
 -- (without using other functions except (==))
+elem' :: Eq a => a -> [a] -> Bool
+elem' _ [] = False
+elem' x (y:ys)
+    | x == y    = True
+    | otherwise = elem' x ys
 
 (!!) :: [a] -> Nat -> a
 (!!) [] _           = error "A lista é vazia"
@@ -228,37 +233,114 @@ filter f (x : xs)
   | otherwise = filter f xs
 
 map :: (a -> b) -> [a] -> [b] -- retorna uma lista de f a
-map f [] = []
+map f []       = []
 map f (x : xs) =  f x : map f xs
 
 cycle :: [a] -> [a]
-cycle [] = []
-cycle (x : xs) = cycle (x : cycle xs)
--- repeat
--- replicate
+cycle [] = error "A lista é vazia"
+cycle xs = xs ++ cycle xs -- corrigi xs' where xs' = xs ++ xs' ??
 
--- isPrefixOf
--- isInfixOf
--- isSuffixOf
+repeat :: a -> [a] -- recebe um elemento e retorna uma lista com o elemento repetido infinitamente.
+repeat a = a : repeat a -- parecidíssima com a cycle, mas a diferença está no input: cycle recebe listas e não elementos!
 
--- zip
--- zipWith
+replicate :: Nat -> a -> [a]
+replicate O _     = []
+replicate (S n) a = a : replicate n a
 
--- intercalate
--- nub
+isPrefixOf :: Eq a => [a] -> [a] -> Bool -- verifica se a primeira lista aparece no início da segunda
+isPrefixOf [] _ = True
+isPrefixOf _ [] = False
+isPrefixOf (x : xs) (y : ys)
+  | x == y    = isPrefixOf xs ys
+  | otherwise = False
 
--- splitAt
--- what is the problem with the following?:
+isInfixOf :: Eq a => [a] -> [a] -> Bool
+isInfixOf [] _              = True  -- nenhum elemento está contido em uma lista qualquer? True
+isInfixOf (x : xs) []       = False
+isInfixOf (x : xs) (y : ys) = x == y (||) isInfixOf (x : xs) ys
+  -- | x == y = isInfixOf xs ys
+  -- |otherwise = isInfixOf (x : xs) ys -- seria o mesmo que x == y isInfixOf (x:xs) || ys?
+
+isSuffixOf :: Eq a => [a] -> [a] -> Bool --precisa da reverse? ver outra definição legal
+isSuffixOf [] _              = True
+isSuffixOf (x : xs) []       = False
+isSuffixOf (x : xs) (y : ys) = reverse (x : xs) `isPrefixOf` reverse (y : ys)
+
+zip :: [a] -> [b] -> [(a , b)] -- criação de tuplas, mas é bom lembrar que ela joga fora os elementos restantes de uma lista se a outra acaba (vale para os dois lados/argumentos 1 ou 2)
+zip [] _              = []
+zip _ []              = []
+zip (x : xs) (y : ys) = (x,y) : zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] -- aplica funções no par (a,b), para cada a e b com o mesmo índice nas listas e retorna a lista de f a b
+zipWith f [] _              = []
+zipWith f _ []              = []
+zipWith f (x : xs) (y : ys) = f x y : zipWith f xs ys
+
+intercalate :: [a] -> [[a]] -> [a]
+intercalate _ []  = []
+intercalate _ [x] = x
+intercalate s (x : xs) = x ++ s ++ intercalate s xs -- em que s é o elemento (ou lista de caracteres) que vai separar o elementos da segunda lista
+
+nub :: Eq a => [a] -> [a]
+nub [] = []
+nub (x : xs) 
+    | x `elem'` xs = nub xs
+    | otherwise    = x : nub xs
+ 
+splitAt :: Nat -> [a] -> ([a], [a]) -- testar isso
+splitAt :: Nat -> [a] -> ([a], [a])
+splitAt O xs = ([], xs)
+splitAt _ [] = ([], [])
+splitAt (S n) (x:xs) = (x:ys, zs)
+  where
+    (ys, zs) = splitAt n xs
+
+-- what is the problem with the following?: 
 -- splitAt n xs  =  (take n xs, drop n xs)
+-- Resposta: se n for maior que o tamanho da lista xs, a segunda lista fica vazia e a primeira fica com todos os elementos.
+-- Ou seja: o splitAt foi mal usado nesse caso.
 
--- break
+-- quebra a lista em partes: primeira parte é a lista até antes do elemento que satisfaz a condição
+-- a segunda lista é a lista a partir desse elemento (ver anotações, meio confuso)
+break :: (a -> Bool) -> [a] -> ([a], [a]) 
+break _ [] = ([], [])
+break p (x:xs)
+    | p x       = ([], x:xs)
+    | otherwise = (x : parte1, parte2)
+        where (parte1, parte2) = break p xs
 
--- lines
--- words
--- unlines
--- unwords
+lines :: String -> [String] 
+lines "" = [""]
+lines str =
+    case break (== '\n') str of -- divide no primeiro '\n'
+        (linha, resto) ->          -- linha = parte antes do '\n'
+            if null resto
+            then [linha]           -- retorna só a linha
+            else linha : lines (tail resto)  --else adiciona linha e processa o resto
 
--- transpose
+isSpace :: Char -> Bool  
+isSpace c = c == ' ' (||) c == '\n'
+
+words :: String -> [String]
+words "" = []
+words string =
+    case dropWhile isSpace string of
+        "" -> []
+        s -> let (palavra, rest) = break isSpace s
+             in palavra : words rest
+
+unlines :: [String] -> String
+unlines [] = ""
+unlines (linha:linhas) = linha ++ "\n" ++ unlines linhas
+
+unwords :: [String] -> String
+unwords = intercalate " "
+
+transpose :: [[a]] -> [[a]]
+transpose [] = []
+transpose (x : xs)
+    | all null (x : xs) = []
+    | otherwise = map head (x : xs) : transpose (map tail (x : xs))
 
 -- checks if the letters of a phrase form a palindrome (see below for examples)
 palindrome :: String -> Bool
