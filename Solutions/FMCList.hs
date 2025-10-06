@@ -287,7 +287,6 @@ nub (x : xs)
     | x `elem'` xs = nub xs
     | otherwise    = x : nub xs
  
-splitAt :: Nat -> [a] -> ([a], [a]) -- testar isso
 splitAt :: Nat -> [a] -> ([a], [a])
 splitAt O xs = ([], xs)
 splitAt _ [] = ([], [])
